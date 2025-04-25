@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using NZWalks.API.Repositories;
 using AutoMapper;
 using NZWalks.API.CustomActionFilters;
+using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 
 namespace NZWalks.API.Controllers
 {
@@ -17,19 +19,23 @@ namespace NZWalks.API.Controllers
         private readonly NZWalksDbContext dbContext;
         private readonly IRegionRepository regionRepository;
         private readonly IMapper mapper;
+        private readonly ILogger<RegionsController> logger;
 
-        public RegionsController(NZWalksDbContext dbContext, IRegionRepository regionRepository, IMapper mapper )
+        public RegionsController(NZWalksDbContext dbContext, IRegionRepository regionRepository, IMapper mapper, ILogger<RegionsController> logger )
         {
             this.dbContext = dbContext;
             this.regionRepository = regionRepository;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         //GET ALL REGIONS
         //GET: https://localhost:7226/api/regions
         [HttpGet]
+       [Authorize(Roles ="Reader")]
         public async Task<IActionResult> GetAll()
         {
+            //logger.LogInformation("GetAllRegions Action Method Invoked");
             //get data from database-domain models
             var regionsDomain = await regionRepository.GetAllAsync();
             //map domin models to dto
@@ -47,7 +53,7 @@ namespace NZWalks.API.Controllers
             //}
             //another map domain to dto
             var regionsDto = mapper.Map<List<RegionDto>>(regionsDomain);
-
+            //logger.LogInformation($"Finished GetAllRegions request with data: {JsonSerializer.Serialize(regionsDomain)}");
             //return dto
             return Ok(regionsDto);
         }
@@ -56,9 +62,11 @@ namespace NZWalks.API.Controllers
         //GET: https://localhost:7226/api/regions/{id}
         [HttpGet]
         [Route("{id:Guid}")]
-        
+       [Authorize(Roles = "Reader")]
+
         public async Task<IActionResult> GetById([FromRoute]Guid id)
         {
+            
             //var region = dbContext.Regions.Find(id); only allows you pass pry key
             //get region domain model from database
             var regionDomain = await regionRepository.GetByIdAsync(id);//allows you pass others
@@ -66,7 +74,7 @@ namespace NZWalks.API.Controllers
             if (regionDomain == null)
                 return NotFound();
             //map domain to dto
-
+           
             return Ok(mapper.Map<RegionDto>(regionDomain));
         }
 
@@ -74,6 +82,7 @@ namespace NZWalks.API.Controllers
         //POST: https://localhost:7226/api/regions
         [HttpPost]
         [ValidateModel]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> CreateRegion([FromBody] AddRegionRequestDto addRegionRequestDto)
         {
             
@@ -92,6 +101,7 @@ namespace NZWalks.API.Controllers
         [HttpPut]
         [Route("{id:Guid}")]
         [ValidateModel]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateRegionsRequestDto updateRegionsRequestDto)
         {
             
@@ -113,7 +123,8 @@ namespace NZWalks.API.Controllers
         //DEL:https://localhost:7226/api/regions/{id}
         [HttpDelete]
         [Route("{id:guid}")]
-            public async Task<IActionResult> Delete([FromRoute] Guid id)
+        [Authorize(Roles = "Writer, Reader")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var regionDomainModel = await regionRepository.DeleteAsync(id);
             if (regionDomainModel == null) return NotFound();

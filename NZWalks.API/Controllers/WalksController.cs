@@ -38,12 +38,19 @@ namespace NZWalks.API.Controllers
         }
 
         //GET walks
-        //GET:
+        //GET:/api/walks?fitlerOn=Name&fiterQuery=Track&sortBy=Name&sortOrder=Name&isAscending=true&pageNumber=1&pageSize=10
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery] string? filterQuery,
+            [FromQuery] string? sortBy, [FromQuery] bool? isAscending,
+            [FromQuery] int pagenumber =1, [FromQuery] int pageSize = 1000)
         {
-           var walksDomainModel= await walkRepository.GetAllAsync();
-            
+           var walksDomainModel= await walkRepository.GetAllAsync(filterOn,filterQuery, sortBy, isAscending ?? true, 
+               pagenumber, pageSize );//if isAscending is null, default to true
+
+            //create exception
+            throw new Exception("This is a new exception");
+
+            //map domain model to dto
             return Ok(mapper.Map<List<WalkDto>>(walksDomainModel));
         }
 
@@ -77,8 +84,9 @@ namespace NZWalks.API.Controllers
                 return Ok(mapper.Map<WalkDto>(walkDomainModel));
           
         }
+        
         //delete
-
+        //del
         [HttpDelete]
         [Route("{id:Guid}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] Guid id)

@@ -32,10 +32,10 @@ namespace NZWalks.API.Controllers
         //GET ALL REGIONS
         //GET: https://localhost:7226/api/regions
         [HttpGet]
-       [Authorize(Roles ="Reader")]
+        //[Authorize(Roles ="Reader")]
         public async Task<IActionResult> GetAll()
         {
-            //logger.LogInformation("GetAllRegions Action Method Invoked");
+            logger.LogInformation("GetAllRegions Action Method Invoked");
             //get data from database-domain models
             var regionsDomain = await regionRepository.GetAllAsync();
             //map domin models to dto
@@ -53,7 +53,7 @@ namespace NZWalks.API.Controllers
             //}
             //another map domain to dto
             var regionsDto = mapper.Map<List<RegionDto>>(regionsDomain);
-            //logger.LogInformation($"Finished GetAllRegions request with data: {JsonSerializer.Serialize(regionsDomain)}");
+            logger.LogInformation($"Finished GetAllRegions request with data: {JsonSerializer.Serialize(regionsDto)}");
             //return dto
             return Ok(regionsDto);
         }
@@ -62,7 +62,7 @@ namespace NZWalks.API.Controllers
         //GET: https://localhost:7226/api/regions/{id}
         [HttpGet]
         [Route("{id:Guid}")]
-       [Authorize(Roles = "Reader")]
+       //[Authorize(Roles = "Reader")]
 
         public async Task<IActionResult> GetById([FromRoute]Guid id)
         {
@@ -82,7 +82,7 @@ namespace NZWalks.API.Controllers
         //POST: https://localhost:7226/api/regions
         [HttpPost]
         [ValidateModel]
-        [Authorize(Roles = "Writer")]
+       // [Authorize(Roles = "Writer")]
         public async Task<IActionResult> CreateRegion([FromBody] AddRegionRequestDto addRegionRequestDto)
         {
             
@@ -101,7 +101,7 @@ namespace NZWalks.API.Controllers
         [HttpPut]
         [Route("{id:Guid}")]
         [ValidateModel]
-        [Authorize(Roles = "Writer")]
+      //  [Authorize(Roles = "Writer")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateRegionsRequestDto updateRegionsRequestDto)
         {
             
@@ -123,7 +123,7 @@ namespace NZWalks.API.Controllers
         //DEL:https://localhost:7226/api/regions/{id}
         [HttpDelete]
         [Route("{id:guid}")]
-        [Authorize(Roles = "Writer, Reader")]
+       // [Authorize(Roles = "Writer, Reader")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var regionDomainModel = await regionRepository.DeleteAsync(id);
